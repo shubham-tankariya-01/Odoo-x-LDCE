@@ -69,11 +69,11 @@ async def get_my_trips(
     result = await db.execute(stmt)
     return result.scalars().all()
 
-@router.get("/{trip_id}/itinerary", response_model=TripItineraryRead)
+@router.get("/trips/{trip_id}/itinerary", response_model=TripItineraryRead)
 async def get_trip_itinerary(trip_id: UUID, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     return await build_nested_itinerary(db, trip_id, current_user.id)
 
-@router.get("/{trip_id}/budget", response_model=TripBudgetRead)
+@router.get("/trips/{trip_id}/budget", response_model=TripBudgetRead)
 async def get_trip_budget_endpoint(trip_id: UUID, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     trip = await get_trip_or_404(db, trip_id)
     assert_trip_owner(trip, current_user.id)
