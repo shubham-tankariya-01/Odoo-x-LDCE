@@ -6,7 +6,17 @@ GlobeTrotter is a full-stack, responsive travel planning and itinerary managemen
 
 ---
 
+## 🎥 Project Video Demonstration & Walkthrough
+
+[![GlobeTrotter Video Demo](https://img.shields.io/badge/▶%EF%B8%8F_Watch_Video_Demo-Google_Drive-4285F4?style=for-the-badge&logo=googledrive&logoColor=white)](https://drive.google.com/drive/folders/1EZS729YOCC6CvXRLwWO1nKEf6qWPtuW1)
+
+> 📺 **Click the link above to watch the full project video walkthrough:**  
+> **[Google Drive Video Link: GlobeTrotter Walkthrough & Feature Demo](https://drive.google.com/drive/folders/1EZS729YOCC6CvXRLwWO1nKEf6qWPtuW1)**
+
+---
+
 ## 📑 Table of Contents
+- [Project Video Demonstration](#-project-video-demonstration--walkthrough)
 - [Key Features](#-key-features)
 - [Tech Stack](#-tech-stack)
 - [Architecture & Folder Structure](#-architecture--folder-structure)
@@ -21,6 +31,7 @@ GlobeTrotter is a full-stack, responsive travel planning and itinerary managemen
 - [Hackathon Evaluation Quick Links](#-hackathon-evaluation-quick-links)
 
 ---
+
 
 ## 🌟 Key Features
 
@@ -209,6 +220,7 @@ For complete and detailed documentation:
 
 | Evaluation Area | Direct Link / Route | Description |
 | :--- | :--- | :--- |
+| **🎥 Video Walkthrough** | [Google Drive Demo Link](https://drive.google.com/drive/folders/1EZS729YOCC6CvXRLwWO1nKEf6qWPtuW1) | Full project demonstration & walkthrough video |
 | **API Documentation** | `http://localhost:8000/docs` | Live interactive FastAPI Swagger UI |
 | **Explore Cities** | `http://localhost:5173/search` | Dynamic city catalog search with budget filters |
 | **Itinerary Builder** | `http://localhost:5173/trips/new` | Multi-step trip planner & drag/drop activity scheduler |
@@ -216,3 +228,4 @@ For complete and detailed documentation:
 | **Travel Community** | `http://localhost:5173/community` | Story sharing, photo attachment, likes, comments |
 | **Calendar Sync** | `http://localhost:5173/calendar` | Monthly view of scheduled trips & daily activities |
 | **Admin Console** | `http://localhost:5173/admin` | Platform health stats and city/activity catalog manager |
+
