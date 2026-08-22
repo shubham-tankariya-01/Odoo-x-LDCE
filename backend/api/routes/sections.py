@@ -87,7 +87,7 @@ async def delete_section(section_id: UUID, db: AsyncSession = Depends(get_db), c
     trip = await get_trip_or_404(db, section.trip_id)
     assert_trip_owner(trip, current_user.id)
     
-    await db.delete(section)
+    db.delete(section)
     await db.commit()
 
 @router.patch("/trips/{trip_id}/sections/reorder", response_model=List[SectionRead])

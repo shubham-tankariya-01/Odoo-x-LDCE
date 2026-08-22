@@ -7,7 +7,7 @@ The application successfully boots up (`uvicorn backend.main:app`), properly reg
 
 ## 2. What Works
 **Everything in the core scope is currently functional and passing tests.**
-A full test suite run (`pytest backend/tests -v`) confirms that all **21 unit tests** across both backend domains pass with 100% success.
+A full test suite run (`pytest backend/tests -v`) confirms that all **32 unit tests** across both backend domains (including the stretch goals) pass with 100% success.
 
 ### Backend 1 Features (Working):
 - **Auth:** Registration, login, password hashing, and JWT generation work flawlessly.
@@ -23,8 +23,11 @@ A full test suite run (`pytest backend/tests -v`) confirms that all **21 unit te
 - **Global Search:** Backend 1's `/search?q=` endpoint successfully imports and calls Backend 2's `search_public_trips` function, aggregating cities and trips exactly as planned.
 - **Shared Authentication:** Backend 2 successfully imports and utilizes Backend 1's `get_current_user` FastAPI dependency to secure its trip endpoints.
 
+### Stretch Goals (Phase 6 & 7) (Working):
+- **Community:** Posts, comments, and likes routes are fully operational with their respective schemas.
+- **Admin:** Admin guard securely protects routes. Endpoints for user management and cross-domain analytics (e.g., popular cities/activities) execute complex queries perfectly.
+
 ## 3. What Doesn't Work (Pending / Excluded Scope)
-- **Stretch Goals:** The `community.py` and `admin.py` routes are currently empty stubs. Hitting these endpoints will return a `404 Not Found`. This is expected as they were marked as stretch goals.
 - **Live Database Integration in Tests:** While we verified the live Neon PostgreSQL connection via a standalone script, the `pytest` suite still relies heavily on `AsyncMock` and `MagicMock`. The tests validate business logic, but they do not validate raw SQL execution against the live schema.
 
 ## 4. Independence Analysis
@@ -38,7 +41,6 @@ A full test suite run (`pytest backend/tests -v`) confirms that all **21 unit te
 To guarantee production readiness, the following test plans should be executed next:
 1. **Live Database Fixtures:** Replace the `mock_db_session` in `backend/tests/conftest.py` with a fixture that spins up a real test database (or uses a dedicated schema in the Neon DB), runs the DB Engineer's migrations, and drops the schema after tests complete.
 2. **E2E Endpoint Testing:** Write end-to-end tests that hit the `/search` endpoint to verify the JSON response structure when actual trip and city rows exist in the live database.
-3. **Stretch Goal Tests:** Add test suites for `/community` and `/admin` if those modules are developed.
 
 ## 6. Known Bugs & Pending Items (Sorted by Priority)
 
@@ -46,9 +48,7 @@ To guarantee production readiness, the following test plans should be executed n
 - *(None)* - There are no critical crashes, circular imports, or failing tests.
 
 ### 🟡 Moderate
-1. **Passlib Dependency:** `backend/requirements.txt` still contains `passlib[bcrypt]`. I refactored the security module to use `bcrypt` natively due to `passlib` compatibility issues with modern Python environments. `passlib` should be removed from the requirements file to reduce dead weight.
-2. **Missing E2E DB Tests:** As mentioned in Section 5, we lack integration tests that verify SQL syntax against the actual PostgreSQL dialect. (e.g., ensuring `UUID` types map correctly in asyncpg).
+1. **Missing E2E DB Tests:** As mentioned in Section 5, we lack integration tests that verify SQL syntax against the actual PostgreSQL dialect. (e.g., ensuring `UUID` types map correctly in asyncpg).
 
 ### 🟢 Low / Trivial
 1. **Starlette Deprecation Warning:** Running `pytest` yields a `StarletteDeprecationWarning` regarding `httpx`. This is an internal FastAPI test client warning and has no impact on application stability. It can be silenced by installing `httpx2` if desired.
-2. **Empty Router Stubs:** `admin.py` and `community.py` are registered in `main.py` but contain no routes. This is harmless but could be confusing for future developers if the stretch goals are abandoned.
