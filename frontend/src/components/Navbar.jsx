@@ -45,22 +45,27 @@ export function Navbar() {
 
   const navLinks = [
     { name: 'Discover', path: '/' },
+    { name: 'Explore Cities', path: '/search?type=cities' },
     { name: 'My Trips', path: '/trips' },
     { name: 'Community', path: '/community' },
     { name: 'Calendar', path: '/calendar' },
   ];
 
+
   return (
     <nav className="navbar">
-      <div className="container navbar-inner">
-        <Link to="/" className="navbar-logo">
+      <div className="navbar-container">
+        
+        {/* Logo */}
+        <Link to="/" className="navbar-brand">
           <div className="navbar-logo-icon">
             <Compass size={20} />
           </div>
-          <span className="hide-mobile">GlobeTrotter</span>
+          <span className="navbar-logo-text">GlobeTrotter</span>
         </Link>
 
-        <form className="navbar-search hide-mobile" onSubmit={handleSearch}>
+        {/* Search — desktop */}
+        <form className="navbar-search" onSubmit={handleSearch}>
           <Search className="navbar-search-icon" size={16} />
           <input
             type="text"
@@ -71,35 +76,38 @@ export function Navbar() {
           />
         </form>
 
-        <div className="navbar-nav">
-          <div className="hide-mobile" style={{ display: 'flex', gap: '8px', marginRight: '16px' }}>
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`navbar-link ${location.pathname === link.path ? 'active' : ''}`}
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
+        {/* Nav links — desktop */}
+        <div className="navbar-links">
+          {navLinks.map((link) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              className={`navbar-link ${location.pathname === link.path ? 'active' : ''}`}
+            >
+              {link.name}
+            </Link>
+          ))}
+        </div>
 
+        {/* Right actions */}
+        <div className="navbar-actions">
+          {/* Theme toggle */}
           <button 
-            className="btn-ghost rounded-full" 
-            style={{ padding: '8px' }}
+            className="navbar-theme-btn"
             onClick={() => setIsDark(!isDark)}
             aria-label="Toggle theme"
           >
             {isDark ? <Sun size={20} /> : <Moon size={20} />}
           </button>
 
-          <div className="relative">
-            <div 
-              className="navbar-avatar" 
+          {/* Profile dropdown */}
+          <div className="navbar-profile-wrap">
+            <button 
+              className="navbar-profile-btn"
               onClick={() => setIsProfileOpen(!isProfileOpen)}
             >
               {user.first_name ? user.first_name[0].toUpperCase() : <UserIcon size={16} />}
-            </div>
+            </button>
 
             {isProfileOpen && (
               <div className="navbar-dropdown">
@@ -119,9 +127,9 @@ export function Navbar() {
             )}
           </div>
 
+          {/* Mobile menu toggle */}
           <button 
-            className="show-mobile btn-ghost" 
-            style={{ padding: '8px', marginLeft: '8px' }}
+            className="navbar-mobile-toggle"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -131,12 +139,8 @@ export function Navbar() {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="show-mobile" style={{
-          position: 'absolute', top: '100%', left: 0, right: 0, 
-          background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)',
-          padding: '16px', flexDirection: 'column', gap: '16px', boxShadow: 'var(--shadow-md)'
-        }}>
-          <form onSubmit={handleSearch} className="relative w-full">
+        <div className="navbar-mobile-menu">
+          <form onSubmit={handleSearch} className="navbar-search" style={{ display: 'block', maxWidth: 'none', marginBottom: '16px' }}>
             <Search className="navbar-search-icon" size={16} />
             <input
               type="text"
@@ -146,13 +150,12 @@ export function Navbar() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </form>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`navbar-link ${location.pathname === link.path ? 'active' : ''}`}
-                style={{ width: '100%' }}
+                className={`navbar-mobile-link ${location.pathname === link.path ? 'active' : ''}`}
               >
                 {link.name}
               </Link>

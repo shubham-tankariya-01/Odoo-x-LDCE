@@ -1,0 +1,374 @@
+/* ── Trip Budget & Cost Breakdown Screen ── */
+.budget-page {
+  padding: 32px 0 80px;
+  min-height: calc(100vh - var(--navbar-h));
+  background: var(--color-bg);
+}
+
+.budget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.budget-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.budget-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-3);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 4px;
+  transition: color 0.15s;
+}
+.budget-back-btn:hover {
+  color: var(--color-primary);
+}
+
+.budget-title {
+  font-size: 2rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.budget-subtitle {
+  color: var(--color-text-3);
+  font-size: 0.9375rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.budget-header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* ── Top Metric Cards ── */
+.budget-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.budget-metric-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s, border-color 0.2s;
+}
+.budget-metric-card:hover {
+  border-color: var(--color-border-strong);
+  transform: translateY(-2px);
+}
+
+.budget-metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--color-text-3);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.budget-metric-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-2);
+  color: var(--color-primary);
+}
+
+.budget-metric-value {
+  font-size: 1.875rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.budget-metric-status {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.budget-metric-status.positive {
+  color: var(--color-success);
+}
+.budget-metric-status.negative {
+  color: var(--color-danger);
+}
+.budget-metric-status.neutral {
+  color: var(--color-text-3);
+}
+
+/* ── Health / Utilization Banner ── */
+.budget-progress-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 20px 24px;
+  margin-bottom: 32px;
+  box-shadow: var(--shadow-sm);
+}
+
+.budget-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.budget-progress-bar-bg {
+  height: 12px;
+  background: var(--color-surface-2);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  position: relative;
+}
+
+.budget-progress-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.budget-progress-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 0.8125rem;
+  color: var(--color-text-3);
+}
+
+/* ── Two Column Layout (Categories & Legs) ── */
+.budget-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+@media (max-width: 900px) {
+  .budget-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.budget-card-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+
+.budget-section-title {
+  font-size: 1.1875rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Category Breakdown List */
+.budget-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.budget-category-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.budget-category-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.budget-category-bar-bg {
+  height: 8px;
+  background: var(--color-surface-2);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.budget-category-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+/* Section Legs List */
+.budget-leg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.budget-leg-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.budget-leg-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.budget-leg-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.budget-leg-meta {
+  font-size: 0.75rem;
+  color: var(--color-text-3);
+}
+
+.budget-leg-amounts {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.budget-leg-spent {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.budget-leg-budget-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* ── Activity Itemized Ledger Table ── */
+.budget-ledger-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 40px;
+}
+
+.budget-ledger-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.budget-table-wrap {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.budget-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.budget-table th {
+  padding: 14px 20px;
+  background: var(--color-surface-2);
+  color: var(--color-text-3);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.budget-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  vertical-align: middle;
+}
+
+.budget-table tr:last-child td {
+  border-bottom: none;
+}
+
+.budget-table tr:hover td {
+  background: var(--color-surface-2);
+}
+
+.budget-table-cost {
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: var(--color-text);
+}
+
+@media print {
+  .navbar, .budget-header-actions, .budget-back-btn, .builder-header-progress {
+    display: none !important;
+  }
+  .budget-page {
+    padding: 0;
+    background: white;
+    color: black;
+  }
+  .budget-metric-card, .budget-card-section, .budget-ledger-card {
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+}

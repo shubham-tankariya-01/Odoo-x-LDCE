@@ -54,3 +54,19 @@ async def get_current_admin_user(current_user: User = Depends(get_current_user))
     if not current_user.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
     return current_user
+
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
+
+async def get_optional_current_user(token: str | None = Depends(oauth2_scheme_optional), db: AsyncSession = Depends(get_db)) -> User | None:
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        user_id: str = payload.get("sub")
+        if not user_id:
+            return None
+        result = await db.execute(select(User).where(User.id == user_id))
+        return result.scalars().first()
+    except Exception:
+        return None
+

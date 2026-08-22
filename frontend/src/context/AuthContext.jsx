@@ -42,23 +42,50 @@ export function AuthProvider({ children }) {
   }, [token]);
 
   const login = async (username, password) => {
-    const data = await apiLogin(username, password);
-    localStorage.setItem('token', data.access_token);
-    setToken(data.access_token);
-    // user will be loaded by the useEffect
+    setIsLoading(true);
+    try {
+      const data = await apiLogin(username, password);
+      localStorage.setItem('token', data.access_token);
+      setToken(data.access_token);
+      
+      // Eagerly fetch and store user before resolving
+      const userData = await getMe();
+      setUser(userData);
+      return userData;
+    } catch (err) {
+      localStorage.removeItem('token');
+      setToken(null);
+      setUser(null);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const register = async (payload) => {
-    const userData = await apiRegister(payload);
-    // Standard register doesn't return token in many APIs, but GlobeTrotter docs 
-    // say "Create user account". If it doesn't return a token, we might need to 
-    // login immediately after. Assuming it returns token or we login after.
-    // Actually, looking at standard FastAPI setups, register often returns the user.
-    // Let's do a login right after register to get the token.
-    if (userData && payload.password) {
-      await login(payload.username || payload.email, payload.password);
+    setIsLoading(true);
+    try {
+      const data = await apiRegister(payload);
+      if (data && data.access_token) {
+        localStorage.setItem('token', data.access_token);
+        setToken(data.access_token);
+        const userData = data.user || await getMe();
+        setUser(userData);
+        return userData;
+      } else if (payload.password) {
+        return await login(payload.email || payload.username, payload.password);
+      }
+    } catch (err) {
+      localStorage.removeItem('token');
+      setToken(null);
+      setUser(null);
+      throw err;
+    } finally {
+      setIsLoading(false);
     }
   };
+
+
 
   const logout = () => {
     localStorage.removeItem('token');

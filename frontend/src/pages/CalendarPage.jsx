@@ -8,12 +8,12 @@ export function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   
   const [trips, setTrips] = useState([]);
-  const [itineraries, setItineraries] = useState({}); // tripId -> itinerary data
+  const [itineraries, setItineraries] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchTripsAndItineraries();
-  }, [currentDate]); // Could refetch or cache based on month, simple enough to fetch all
+  }, [currentDate]);
 
   const fetchTripsAndItineraries = async () => {
     setLoading(true);
@@ -21,16 +21,12 @@ export function CalendarPage() {
       const tripsData = await listTrips({ owner: 'me' });
       setTrips(tripsData);
       
-      // Fetch itineraries for active/upcoming trips to plot activities
-      // Optimization: Only fetch itineraries for trips that overlap with current month
-      // For now, fetch for all trips or top N to keep simple
       const itins = {};
       for (const t of tripsData) {
         try {
           const itinData = await getItinerary(t.id);
           itins[t.id] = itinData;
         } catch (e) {
-          // ignore error for a single trip
         }
       }
       setItineraries(itins);
@@ -41,7 +37,6 @@ export function CalendarPage() {
     }
   };
 
-  // Calendar logic
   const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
   const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
 
@@ -58,7 +53,6 @@ export function CalendarPage() {
   const today = new Date();
   today.setHours(0,0,0,0);
 
-  // Pad previous month
   const prevMonthDays = getDaysInMonth(year, month - 1);
   for (let i = firstDay - 1; i >= 0; i--) {
     days.push({
@@ -67,7 +61,6 @@ export function CalendarPage() {
     });
   }
 
-  // Current month
   for (let i = 1; i <= daysInMonth; i++) {
     days.push({
       date: new Date(year, month, i),
@@ -75,8 +68,7 @@ export function CalendarPage() {
     });
   }
 
-  // Pad next month
-  const remaining = 42 - days.length; // 6 rows of 7
+  const remaining = 42 - days.length; 
   for (let i = 1; i <= remaining; i++) {
     days.push({
       date: new Date(year, month + 1, i),
@@ -84,23 +76,29 @@ export function CalendarPage() {
     });
   }
 
-  // Helper to get events for a day
   const getEventsForDay = (dateObj) => {
-    // Zero out time for comparison
     const compareDate = new Date(dateObj);
     compareDate.setHours(0,0,0,0);
     const dateStr = compareDate.toISOString().split('T')[0];
     
     const events = [];
 
-    // Check trips spanning this day
     trips.forEach(trip => {
       const start = new Date(trip.start_date); start.setHours(0,0,0,0);
       const end = new Date(trip.end_date); end.setHours(0,0,0,0);
       
       if (compareDate >= start && compareDate <= end) {
-        // Look for specific activities on this day
-        let hasSpecificActivity = false;
+        const isStart = compareDate.getTime() === start.getTime();
+        const isEnd = compareDate.getTime() === end.getTime();
+        
+        // Push the continuous trip strip event
+        events.push({
+          id: `trip-${trip.id}-${dateStr}`,
+          title: isStart ? trip.name : '\u00A0', // only show name on first day
+          tripId: trip.id,
+          type: 'trip',
+          className: `trip ${isStart ? 'trip-start' : ''} ${isEnd ? 'trip-end' : ''} ${!isStart && !isEnd ? 'trip-middle' : ''}`
+        });
         
         if (itineraries[trip.id] && itineraries[trip.id].sections) {
           itineraries[trip.id].sections.forEach(sec => {
@@ -113,23 +111,11 @@ export function CalendarPage() {
                     time: act.scheduled_time ? act.scheduled_time.substring(0, 5) : '',
                     tripId: trip.id,
                     type: 'activity',
-                    color: 'var(--color-primary)'
+                    className: 'activity'
                   });
-                  hasSpecificActivity = true;
                 }
               });
             }
-          });
-        }
-        
-        // If no specific activity, just mark the trip day
-        if (!hasSpecificActivity) {
-          events.push({
-            id: `trip-${trip.id}-${dateStr}`,
-            title: trip.name,
-            tripId: trip.id,
-            type: 'trip',
-            color: 'var(--color-secondary)'
           });
         }
       }
@@ -139,30 +125,30 @@ export function CalendarPage() {
   };
 
   return (
-    <div className="page-wrapper bg-surface-2" style={{ minHeight: '100vh' }}>
-      <div className="container" style={{ paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-12)' }}>
+    <div className="calendar-page">
+      <div className="container" style={{ maxWidth: '1200px' }}>
         
-        <div className="page-header flex items-center justify-between flex-wrap gap-4 mb-6">
+        <div className="calendar-header">
           <div>
-            <h1 className="page-title">Calendar</h1>
-            <p className="page-subtitle">Your upcoming trips and scheduled activities.</p>
+            <h1 className="calendar-title">Calendar</h1>
+            <p className="calendar-subtitle">Your upcoming trips and scheduled activities.</p>
           </div>
           
-          <div className="flex items-center gap-4 bg-surface p-2 rounded-md shadow-sm border border-border">
-            <button className="btn btn-ghost btn-sm" onClick={goToToday}>Today</button>
-            <div className="h-6 w-px bg-border"></div>
-            <button className="btn btn-ghost btn-sm p-1" onClick={prevMonth}><ChevronLeft size={20} /></button>
-            <h2 className="font-display font-semibold text-lg w-40 text-center">
+          <div className="calendar-nav">
+            <button className="calendar-nav-today" onClick={goToToday}>Today</button>
+            <div className="calendar-nav-sep"></div>
+            <button className="calendar-nav-btn" onClick={prevMonth}><ChevronLeft size={20} /></button>
+            <h2 className="calendar-nav-month">
               {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
             </h2>
-            <button className="btn btn-ghost btn-sm p-1" onClick={nextMonth}><ChevronRight size={20} /></button>
+            <button className="calendar-nav-btn" onClick={nextMonth}><ChevronRight size={20} /></button>
           </div>
         </div>
 
-        <div className="card p-0 shadow-md">
+        <div className="calendar-container">
           {loading ? (
-            <div className="p-8 flex justify-center">
-              <div className="spinner spinner-lg"></div>
+            <div className="calendar-loading">
+              <div className="spinner"></div>
             </div>
           ) : (
             <div className="calendar-grid">
@@ -179,30 +165,27 @@ export function CalendarPage() {
                 return (
                   <div 
                     key={i} 
-                    className={`calendar-day ${!dayObj.isCurrentMonth ? 'other-month' : ''} ${isToday ? 'today' : ''} ${hasTrip ? 'has-trip' : ''}`}
+                    className={`calendar-day ${!dayObj.isCurrentMonth ? 'other-month' : ''} ${isToday ? 'today' : ''} ${hasTrip ? 'has-event' : ''}`}
                     onClick={() => {
                       if (events.length > 0) {
                         navigate(`/trips/${events[0].tripId}`);
-                      } else {
-                        // Could link to create trip with pre-filled dates, but standard is just view
                       }
                     }}
                   >
                     <div className="calendar-day-num">{dayObj.date.getDate()}</div>
-                    <div className="flex flex-col mt-1 h-full overflow-hidden">
+                    <div className="calendar-events">
                       {events.slice(0, 3).map((ev, idx) => (
                         <div 
                           key={ev.id || idx} 
-                          className="calendar-event"
-                          style={{ backgroundColor: ev.type === 'activity' ? 'var(--color-primary)' : 'var(--color-upcoming)' }}
+                          className={`calendar-event ${ev.className}`}
                           title={`${ev.time ? ev.time + ' ' : ''}${ev.title}`}
                         >
-                          {ev.time && <span className="opacity-80 mr-1">{ev.time}</span>}
+                          {ev.time && <span style={{ opacity: 0.8, marginRight: '4px' }}>{ev.time}</span>}
                           {ev.title}
                         </div>
                       ))}
                       {events.length > 3 && (
-                        <div className="text-xs text-secondary font-medium mt-1">+{events.length - 3} more</div>
+                        <div className="calendar-event-more">+{events.length - 3} more</div>
                       )}
                     </div>
                   </div>

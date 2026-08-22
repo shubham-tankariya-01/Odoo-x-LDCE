@@ -26,15 +26,18 @@ def validate_trip_dates(start: date, end: date):
     if start and end and end < start:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Trip end date cannot be before start date")
 
-def validate_section_dates(section_start: date, section_end: date, trip: Trip):
-    if section_start and section_end and section_end < section_start:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Section end date cannot be before start date")
+def validate_section_dates(section_start: date, section_end: date, trip: Trip) -> tuple[date, date]:
+    s = section_start or trip.start_date
+    e = section_end or trip.end_date or s
     
-    if trip.start_date and section_start and section_start < trip.start_date:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Section start date cannot be before trip start date")
-        
-    if trip.end_date and section_end and section_end > trip.end_date:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Section end date cannot be after trip end date")
+    if trip.start_date and s < trip.start_date:
+        s = trip.start_date
+    if trip.end_date and e > trip.end_date:
+        e = trip.end_date
+    if e < s:
+        e = s
+    return s, e
+
 
 def validate_activity_date(activity_date: date, section: Section):
     if section.start_date and activity_date and activity_date < section.start_date:

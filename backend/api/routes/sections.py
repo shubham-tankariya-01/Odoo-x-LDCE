@@ -28,27 +28,30 @@ async def create_section(trip_id: UUID, section_in: SectionCreate, db: AsyncSess
     trip = await get_trip_or_404(db, trip_id)
     assert_trip_owner(trip, current_user.id)
     
-    validate_section_dates(section_in.start_date, section_in.end_date, trip)
+    start_d, end_d = validate_section_dates(section_in.start_date, section_in.end_date, trip)
     
     # Get max order_index
     max_idx_stmt = select(func.max(Section.order_index)).where(Section.trip_id == trip_id)
     max_idx_res = await db.execute(max_idx_stmt)
-    max_idx = max_idx_res.scalar() or -1
+    max_idx = max_idx_res.scalar()
+    if max_idx is None:
+        max_idx = -1
     
     section = Section(
         trip_id=trip_id,
         city_id=section_in.city_id,
-        title=section_in.title,
-        description=section_in.description,
-        start_date=section_in.start_date,
-        end_date=section_in.end_date,
-        budget=section_in.budget,
+        title=section_in.title or f"Section {max_idx + 2}",
+        description=section_in.description or "",
+        start_date=start_d,
+        end_date=end_d,
+        budget=section_in.budget or 0,
         order_index=max_idx + 1
     )
     db.add(section)
     await db.commit()
     await db.refresh(section)
     return section
+
 
 @router.patch("/sections/{section_id}", response_model=SectionRead)
 async def update_section(section_id: UUID, section_in: SectionUpdate, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):

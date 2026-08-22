@@ -27,11 +27,13 @@ export function ItineraryViewPage() {
 
   if (loading) {
     return (
-      <div className="page-wrapper container" style={{ paddingTop: 'var(--space-8)' }}>
-        <div className="skeleton skeleton-text h-12 w-64 mb-8"></div>
-        <div className="grid grid-3 gap-8" style={{ gridTemplateColumns: '2fr 1fr' }}>
-          <div className="skeleton skeleton-card h-96"></div>
-          <div className="skeleton skeleton-card h-64"></div>
+      <div className="itinerary-page">
+        <div className="container">
+          <div className="skeleton" style={{ height: '320px', borderRadius: 'var(--radius-2xl)', marginBottom: '40px' }}></div>
+          <div className="itinerary-layout">
+            <div className="skeleton" style={{ height: '400px', borderRadius: 'var(--radius-xl)' }}></div>
+            <div className="skeleton" style={{ height: '600px', borderRadius: 'var(--radius-xl)' }}></div>
+          </div>
         </div>
       </div>
     );
@@ -39,149 +41,198 @@ export function ItineraryViewPage() {
 
   if (!itinerary) {
     return (
-      <div className="page-wrapper container flex items-center justify-center">
-        <div className="empty-state">
+      <div className="itinerary-page flex items-center justify-center">
+        <div className="empty-state" style={{ maxWidth: '400px', margin: 'auto' }}>
+          <AlertTriangle size={64} className="empty-state-icon" style={{ color: 'var(--color-warning)' }} />
           <h3 className="empty-state-title">Failed to load itinerary</h3>
-          <Link to="/trips" className="btn btn-primary mt-4">Back to Trips</Link>
+          <p className="empty-state-desc">We couldn't retrieve the details for this trip.</p>
+          <Link to="/trips" className="btn btn-primary btn-lg">
+            Back to Trips
+          </Link>
         </div>
       </div>
     );
   }
 
-  // Extract unique days from itinerary for filtering
-  const allDays = Array.from(new Set(
-    (itinerary.sections || []).flatMap(sec => 
-      (sec.activities || []).map(act => act.scheduled_date.split('T')[0])
-    )
-  )).sort();
+  // Generate all unique days from start_date to end_date or activity dates
+  const generateTripDays = () => {
+    if (!itinerary.start_date || !itinerary.end_date) return [];
+    const days = new Set();
+    
+    // Add all dates between start and end
+    try {
+      const cur = new Date(itinerary.start_date);
+      const end = new Date(itinerary.end_date);
+      while (cur <= end) {
+        days.add(cur.toISOString().split('T')[0]);
+        cur.setDate(cur.getDate() + 1);
+      }
+    } catch (e) {
+      console.warn("Date range calc error:", e);
+    }
+
+    // Also add any activity dates
+    (itinerary.sections || []).forEach(sec => {
+      (sec.activities || []).forEach(act => {
+        if (act.scheduled_date) {
+          days.add(act.scheduled_date.split('T')[0]);
+        }
+      });
+    });
+
+    return Array.from(days).sort();
+  };
+
+  const allDays = generateTripDays();
+
 
   return (
-    <div className="page-wrapper bg-surface-2" style={{ minHeight: '100vh' }}>
-      <div className="container" style={{ paddingTop: 'var(--space-6)', paddingBottom: 'var(--space-12)' }}>
+    <div className="itinerary-page">
+      <div className="container">
         
-        <div className="mb-6">
-          <Link to="/trips" className="btn btn-ghost btn-sm text-secondary mb-4" style={{ paddingLeft: 0 }}>
-            <ArrowLeft size={16} /> Back to My Trips
-          </Link>
-          <div className="flex items-end justify-between flex-wrap gap-4">
-            <div>
-              <h1 className="page-title mb-1">{itinerary.name}</h1>
-              <div className="flex items-center gap-4 text-secondary text-sm">
-                <span className="flex items-center gap-1"><Calendar size={14}/> {new Date(itinerary.start_date).toLocaleDateString()} - {new Date(itinerary.end_date).toLocaleDateString()}</span>
-                <span className={`badge badge-${itinerary.status}`}>{itinerary.status}</span>
+        {/* Banner */}
+        <div className="itinerary-header group">
+          <img 
+            src={itinerary.cover_photo_url || `https://source.unsplash.com/1200x400/?travel,${encodeURIComponent(itinerary.name)}`} 
+            alt={itinerary.name} 
+            className="itinerary-header-img"
+            onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200'; }}
+          />
+          <div className="itinerary-header-overlay"></div>
+          <div className="itinerary-header-content">
+            <Link to="/trips" className="btn btn-ghost" style={{ color: 'white', padding: 0, marginBottom: '16px' }}>
+              <ArrowLeft size={18} /> Back to My Trips
+            </Link>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '20px' }}>
+              <div>
+                <h1 className="itinerary-header-title">{itinerary.name}</h1>
+                <div className="itinerary-header-meta">
+                  <div className="itinerary-header-meta-item">
+                    <Calendar size={18} /> 
+                    {new Date(itinerary.start_date).toLocaleDateString()} - {new Date(itinerary.end_date).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <Link to={`/trips/${tripId}/budget`} className="btn btn-secondary" style={{ background: 'rgba(255,255,255,0.95)', color: 'var(--color-text)', border: 'none', boxShadow: 'var(--shadow-md)' }}>
+                  <DollarSign size={18} /> Budget Breakdown
+                </Link>
+                <Link to={`/trips/${tripId}/build`} className="btn btn-primary" style={{ boxShadow: 'var(--shadow-lg)' }}>
+                  <Edit2 size={18} /> Edit Itinerary
+                </Link>
               </div>
             </div>
-            <Link to={`/trips/${tripId}/build`} className="btn btn-secondary">
-              <Edit2 size={16} /> Edit Itinerary
-            </Link>
           </div>
         </div>
 
-        <div className="grid grid-3 gap-8" style={{ gridTemplateColumns: '1fr', '@media (min-width: 1024px)': { gridTemplateColumns: '2fr 1fr' } }}>
+
+        <div className="itinerary-layout">
           
-          {/* Left Column: Itinerary Details */}
-          <div className="flex flex-col gap-6">
+          {/* Left Column: Itinerary Timeline */}
+          <div>
             
             {/* Filter Bar */}
-            <div className="search-filter-bar mb-0" style={{ padding: 'var(--space-2) var(--space-4)' }}>
-              <div className="text-sm font-medium text-secondary mr-2">Filter by Day:</div>
-              <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
+            <div className="itinerary-filter-bar">
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--color-text-3)', paddingLeft: '8px' }}>Filter:</span>
+              <button 
+                className={`itinerary-filter-btn ${filterDay === 'all' ? 'active' : ''}`}
+                onClick={() => setFilterDay('all')}
+              >
+                All Days
+              </button>
+              {allDays.map((day, idx) => (
                 <button 
-                  className={`btn btn-sm rounded-full ${filterDay === 'all' ? 'btn-primary' : 'btn-secondary'}`}
-                  onClick={() => setFilterDay('all')}
+                  key={day}
+                  className={`itinerary-filter-btn ${filterDay === day ? 'active' : ''}`}
+                  onClick={() => setFilterDay(day)}
                 >
-                  All Days
+                  Day {idx + 1} <span style={{ opacity: 0.7, marginLeft: '4px' }}>({new Date(day).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })})</span>
                 </button>
-                {allDays.map((day, idx) => (
-                  <button 
-                    key={day}
-                    className={`btn btn-sm rounded-full ${filterDay === day ? 'btn-primary' : 'btn-secondary'}`}
-                    onClick={() => setFilterDay(day)}
-                  >
-                    Day {idx + 1} ({new Date(day).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })})
-                  </button>
-                ))}
-              </div>
+              ))}
             </div>
 
             {(!itinerary.sections || itinerary.sections.length === 0) ? (
-              <div className="empty-state bg-surface border border-border rounded-md">
-                <MapPin className="empty-state-icon" />
+              <div className="empty-state" style={{ border: '1px dashed var(--color-border)', background: 'var(--color-surface)' }}>
+                <MapPin size={48} className="empty-state-icon" />
                 <h3 className="empty-state-title">Your itinerary is empty</h3>
                 <p className="empty-state-desc">Head to the builder to add sections and activities.</p>
-                <Link to={`/trips/${tripId}/build`} className="btn btn-primary mt-4">Open Builder</Link>
+                <Link to={`/trips/${tripId}/build`} className="btn btn-primary">
+                  Open Builder
+                </Link>
               </div>
             ) : (
-              <div className="flex flex-col gap-8">
+              <div className="itinerary-timeline">
                 {itinerary.sections.map((section, sIdx) => {
                   
-                  // Filter activities in this section by selected day
                   const visibleActivities = (section.activities || []).filter(act => 
-                    filterDay === 'all' || act.scheduled_date.startsWith(filterDay)
+                    filterDay === 'all' || (act.scheduled_date && act.scheduled_date.startsWith(filterDay))
                   ).sort((a, b) => {
                     const timeA = a.scheduled_time || '24:00';
                     const timeB = b.scheduled_time || '24:00';
-                    if (a.scheduled_date !== b.scheduled_date) return a.scheduled_date.localeCompare(b.scheduled_date);
+                    const dateA = a.scheduled_date || '9999-12-31';
+                    const dateB = b.scheduled_date || '9999-12-31';
+                    if (dateA !== dateB) return dateA.localeCompare(dateB);
                     return timeA.localeCompare(timeB);
                   });
 
                   if (filterDay !== 'all' && visibleActivities.length === 0) return null;
 
                   return (
-                    <div key={section.id} className="relative">
-                      {/* Timeline line connecting sections */}
-                      {sIdx !== itinerary.sections.length - 1 && (
-                        <div className="absolute top-10 bottom-0 left-[23px] w-0.5 bg-border z-0 -mb-10"></div>
-                      )}
-                      
-                      <div className="flex items-start gap-4 mb-4 relative z-10">
-                        <div className="w-12 h-12 rounded-full bg-surface border-2 border-primary text-primary flex items-center justify-center shrink-0 font-display font-bold text-lg shadow-sm">
-                          {sIdx + 1}
+                    <div key={section.id} className="itinerary-day">
+                      <div className="itinerary-day-header">
+                        <h2 className="itinerary-day-title">{section.title}</h2>
+                        <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                          <span className="badge badge-neutral">
+                            {new Date(section.start_date).toLocaleDateString()} - {new Date(section.end_date).toLocaleDateString()}
+                          </span>
+                          {section.budget > 0 && (
+                            <span className="badge badge-success">
+                              <DollarSign size={14} /> Budget: ${section.budget}
+                            </span>
+                          )}
                         </div>
-                        <div className="pt-2 flex-1">
-                          <h2 className="text-2xl font-display font-semibold text-text mb-1">{section.title}</h2>
-                          {section.description && <p className="text-secondary text-sm mb-2">{section.description}</p>}
-                          
-                          <div className="flex items-center gap-4 text-xs text-muted font-medium bg-surface-2 inline-flex px-3 py-1.5 rounded-md">
-                            <span>{new Date(section.start_date).toLocaleDateString()} - {new Date(section.end_date).toLocaleDateString()}</span>
-                            {section.budget > 0 && <span>• Budget: ${section.budget}</span>}
-                          </div>
-                        </div>
+                        {section.description && <p style={{ marginTop: '12px', color: 'var(--color-text-2)' }}>{section.description}</p>}
                       </div>
 
-                      <div className="pl-[72px]">
+                      <div className="itinerary-events">
                         {visibleActivities.length === 0 ? (
-                          <div className="text-sm text-muted italic">No activities planned for this section yet.</div>
+                          <div style={{ padding: '16px', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>
+                            No activities planned for this section yet.
+                          </div>
                         ) : (
-                          <div className="flex flex-col gap-3">
-                            {visibleActivities.map((act) => (
-                              <div key={act.id} className="card p-4 flex gap-4 hover:-translate-y-0.5 transition-transform group">
-                                <div className="text-primary font-bold text-sm w-12 pt-0.5 shrink-0">
-                                  {act.scheduled_time ? act.scheduled_time.substring(0, 5) : 'TBD'}
-                                </div>
-                                <div className="w-1 bg-border rounded-full group-hover:bg-primary-muted transition-colors shrink-0"></div>
-                                <div className="flex-1">
-                                  <div className="flex items-start justify-between gap-4 mb-1">
-                                    <h4 className="font-semibold text-text text-base">{act.activity?.name || 'Activity'}</h4>
-                                    {act.cost_override !== null && (
-                                      <span className="font-medium text-sm whitespace-nowrap">${act.cost_override}</span>
+                          visibleActivities.map((act) => (
+                            <div key={act.id} className="itinerary-event">
+                              <div className="itinerary-event-time">
+                                {act.scheduled_time ? act.scheduled_time.substring(0, 5) : 'TBD'}
+                              </div>
+                              <div className="itinerary-event-dot"></div>
+                              <div className="itinerary-event-card">
+                                <div className="itinerary-event-details">
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                    <h4 className="itinerary-event-title">{act.activity_name || 'Activity'}</h4>
+                                    {act.cost !== null && act.cost !== undefined && (
+                                      <span className="badge badge-success" style={{ padding: '4px 8px', fontSize: '1rem' }}>
+                                        ${act.cost}
+                                      </span>
                                     )}
                                   </div>
-                                  <div className="flex flex-wrap items-center gap-3 text-xs text-secondary mb-2">
-                                    <span className="badge badge-neutral">{act.activity?.category || 'General'}</span>
-                                    <span className="flex items-center gap-1"><Calendar size={12}/> {new Date(act.scheduled_date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                                  <div className="itinerary-event-meta">
+                                    <span className="badge badge-neutral" style={{ textTransform: 'uppercase' }}>{act.activity_category || 'General'}</span>
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                      <Calendar size={14} /> {act.scheduled_date ? new Date(act.scheduled_date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) : 'Unscheduled'}
+                                    </span>
                                   </div>
                                   
                                   {act.notes && (
-                                    <div className="text-sm text-secondary bg-surface-2 p-2.5 rounded-sm flex items-start gap-2 mt-3">
-                                      <AlignLeft size={14} className="mt-0.5 shrink-0 opacity-70" />
-                                      <p>{act.notes}</p>
+                                    <div style={{ marginTop: '16px', padding: '12px', background: 'var(--color-surface)', borderRadius: 'var(--radius-md)', fontSize: '0.875rem', color: 'var(--color-text-2)', display: 'flex', gap: '8px' }}>
+                                      <AlignLeft size={16} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
+                                      {act.notes}
                                     </div>
                                   )}
                                 </div>
                               </div>
-                            ))}
-                          </div>
+                            </div>
+                          ))
                         )}
                       </div>
                     </div>
@@ -191,66 +242,57 @@ export function ItineraryViewPage() {
             )}
           </div>
 
-          {/* Right Column: Budget Breakdown */}
-          <div className="lg:max-w-md w-full">
+          {/* Right Column: Budget Sidebar */}
+          <div>
             {budget ? (
-              <div className="budget-card sticky top-24">
-                <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
-                  <h3 className="text-xl font-display font-semibold flex items-center gap-2"><PieChart size={20} className="text-primary" /> Budget Overview</h3>
-                </div>
+              <div className="itinerary-budget">
+                <h3 className="itinerary-budget-header">
+                  <PieChart size={24} style={{ color: 'var(--color-primary)' }} />
+                  Budget Overview
+                </h3>
                 
-                <div className="mb-8">
-                  <div className="text-sm text-secondary mb-1 font-medium text-uppercase tracking-wide">Total Estimated Cost</div>
-                  <div className="budget-total">${budget.total?.toFixed(2) || '0.00'}</div>
+                <div className="itinerary-budget-total">
+                  <div className="itinerary-budget-label">Total Estimated Cost</div>
+                  <div className="itinerary-budget-amount">${budget.total?.toFixed(2) || '0.00'}</div>
                   
-                  {/* Budget Health indicator (compare to sections total budget) */}
                   {(() => {
                     const totalBudgetAllocated = (itinerary.sections || []).reduce((sum, s) => sum + (s.budget || 0), 0);
                     if (totalBudgetAllocated === 0) return null;
                     
                     const pct = (budget.total / totalBudgetAllocated) * 100;
-                    let healthClass = "badge-success";
-                    let icon = <CheckCircle size={14} />;
-                    let msg = "Under Budget";
+                    let healthColor = "var(--color-success)";
+                    let healthBg = "var(--color-success-bg)";
                     
                     if (pct > 100) {
-                      healthClass = "badge-danger";
-                      icon = <AlertTriangle size={14} />;
-                      msg = "Over Budget";
+                      healthColor = "var(--color-danger)";
+                      healthBg = "var(--color-danger-bg)";
                     } else if (pct > 85) {
-                      healthClass = "badge-warning";
-                      icon = <AlertTriangle size={14} />;
-                      msg = "Approaching Limit";
+                      healthColor = "var(--color-warning)";
+                      healthBg = "var(--color-warning-bg)";
                     }
 
                     return (
-                      <div className="mt-4">
-                        <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-secondary">Allocated: ${totalBudgetAllocated}</span>
-                          <span className="font-medium text-secondary">{Math.round(pct)}% used</span>
+                      <div style={{ marginTop: '16px', textAlign: 'left' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', marginBottom: '8px', color: 'var(--color-text-2)' }}>
+                          <span>Allocated: ${totalBudgetAllocated}</span>
+                          <span>{Math.round(pct)}% used</span>
                         </div>
-                        <div className="budget-bar mb-3 bg-surface-2">
-                          <div className={`budget-bar-fill ${pct > 100 ? 'bg-danger' : pct > 85 ? 'bg-warning' : 'bg-primary'}`} style={{ width: `${Math.min(pct, 100)}%` }}></div>
-                        </div>
-                        <div className={`badge ${healthClass} w-full justify-center py-1.5`}>
-                          {icon} {msg}
+                        <div style={{ height: '8px', background: 'var(--color-surface-2)', borderRadius: '4px', overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${Math.min(pct, 100)}%`, background: healthColor, transition: 'width 1s' }}></div>
                         </div>
                       </div>
                     );
                   })()}
                 </div>
                 
-                {Object.keys(budget.by_category || {}).length > 0 && (
+                {(budget.by_category || []).length > 0 && (
                   <div>
-                    <div className="text-sm font-semibold mb-3 pb-2 border-b border-border">By Category</div>
-                    <div className="flex flex-col gap-3">
-                      {Object.entries(budget.by_category).sort((a, b) => b[1] - a[1]).map(([category, amount]) => (
-                        <div key={category} className="flex items-center justify-between text-sm">
-                          <span className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-primary-muted"></span>
-                            <span className="capitalize text-secondary">{category}</span>
-                          </span>
-                          <span className="font-medium text-text">${amount.toFixed(2)}</span>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-3)', textTransform: 'uppercase', marginBottom: '12px' }}>By Category</div>
+                    <div className="itinerary-budget-list">
+                      {[...(budget.by_category || [])].sort((a, b) => b.total - a.total).map((item) => (
+                        <div key={item.category} className="itinerary-budget-item">
+                          <span className="itinerary-budget-item-name" style={{ textTransform: 'capitalize' }}>{item.category}</span>
+                          <span className="itinerary-budget-item-cost">${(item.total || 0).toFixed(2)}</span>
                         </div>
                       ))}
                     </div>
@@ -258,14 +300,21 @@ export function ItineraryViewPage() {
                 )}
                 
                 {budget.average_daily > 0 && (
-                  <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
-                    <div className="text-sm font-semibold text-secondary">Average Daily Cost</div>
-                    <div className="font-medium text-text">${budget.average_daily.toFixed(2)} / day</div>
+                  <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: '0.875rem', fontWeight: 700 }}>Avg Daily Cost</div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-primary)' }}>${budget.average_daily.toFixed(0)} <span style={{ fontSize: '0.875rem', color: 'var(--color-text-3)' }}>/ day</span></div>
                   </div>
                 )}
+
+                <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--color-border)' }}>
+                  <Link to={`/trips/${tripId}/budget`} className="btn btn-secondary w-full" style={{ justifyContent: 'center', padding: '10px 14px' }}>
+                    <DollarSign size={16} /> Detailed Cost Breakdown
+                  </Link>
+                </div>
               </div>
             ) : (
-              <div className="skeleton skeleton-card h-96 sticky top-24"></div>
+
+              <div className="skeleton" style={{ height: '400px', borderRadius: 'var(--radius-xl)' }}></div>
             )}
           </div>
           

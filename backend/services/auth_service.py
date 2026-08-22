@@ -37,8 +37,10 @@ async def register_user(db: AsyncSession, user_in: UserRegister) -> AuthResponse
 
     return AuthResponse(access_token=access_token, user=new_user)
 
-async def authenticate_user(db: AsyncSession, email: str, password: str) -> AuthResponse:
-    result = await db.execute(select(User).where(User.email == email))
+async def authenticate_user(db: AsyncSession, identifier: str, password: str) -> AuthResponse:
+    from sqlalchemy import func
+    # Case-insensitive email lookup
+    result = await db.execute(select(User).where(func.lower(User.email) == identifier.strip().lower()))
     user = result.scalars().first()
     if not user or not verify_password(password, user.password_hash):
         raise HTTPException(
@@ -53,3 +55,4 @@ async def authenticate_user(db: AsyncSession, email: str, password: str) -> Auth
     )
 
     return AuthResponse(access_token=access_token, user=user)
+

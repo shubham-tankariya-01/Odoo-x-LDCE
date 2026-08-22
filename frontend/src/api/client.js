@@ -21,7 +21,6 @@ export async function fetchWithAuth(endpoint, options = {}) {
   });
 
   if (response.status === 401) {
-    // If we get an unauthorized error on a protected route, token is likely expired
     localStorage.removeItem('token');
     window.dispatchEvent(new CustomEvent('auth:expired'));
     throw new Error('Session expired. Please log in again.');
@@ -31,14 +30,33 @@ export async function fetchWithAuth(endpoint, options = {}) {
     return null; // No content
   }
 
-  const data = await response.json();
+  let data = null;
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    try {
+      data = await response.json();
+    } catch (e) {
+      data = null;
+    }
+  } else {
+    try {
+      const text = await response.text();
+      data = { detail: text };
+    } catch (e) {
+      data = null;
+    }
+  }
 
   if (!response.ok) {
-    throw new Error(data.detail || 'An error occurred');
+    const errorMsg = data && (data.detail || data.message)
+      ? (typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail))
+      : `Request failed (${response.status})`;
+    throw new Error(errorMsg);
   }
 
   return data;
 }
+
 
 // ==========================================
 // AUTH
@@ -52,8 +70,8 @@ export async function register(payload) {
 
 export async function login(username, password) {
   const formData = new URLSearchParams();
-  formData.append('username', username);
-  formData.append('password', password);
+  formData.append('username', (username || '').trim());
+  formData.append('password', password || '');
 
   const response = await fetch(`${BASE_URL}/auth/login`, {
     method: 'POST',
@@ -69,6 +87,7 @@ export async function login(username, password) {
   }
   return data;
 }
+
 
 // ==========================================
 // USERS
@@ -93,9 +112,14 @@ export async function getMyTrips(type) {
 // ==========================================
 // CATALOG (Cities / Activities)
 // ==========================================
+export async function getCountries() {
+  return fetchWithAuth('/countries');
+}
+
 export async function getPopularCities() {
   return fetchWithAuth('/cities/popular');
 }
+
 
 export async function searchCities(params = {}) {
   const qs = new URLSearchParams(params).toString();
@@ -225,6 +249,14 @@ export async function addComment(postId, payload) {
     body: JSON.stringify(payload),
   });
 }
+
+export async function deleteComment(commentId, postId) {
+  return fetchWithAuth(`/community/posts/${postId}/comments/${commentId}`, {
+    method: 'DELETE',
+  });
+}
+
+
 
 // ==========================================
 // ADMIN

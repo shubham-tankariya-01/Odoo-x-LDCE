@@ -34,7 +34,7 @@ export function ProfilePage() {
       getMyTrips('previous')
     ])
     .then(([pre, prev]) => {
-      setPreplannedTrips(pre.slice(0, 3)); // cap to a handful
+      setPreplannedTrips(pre.slice(0, 3)); 
       setPreviousTrips(prev.slice(0, 3));
     })
     .catch(console.error)
@@ -64,166 +64,172 @@ export function ProfilePage() {
   if (!user) return null;
 
   return (
-    <div className="page-wrapper bg-surface-2" style={{ minHeight: '100vh' }}>
-      <div className="container" style={{ paddingTop: 'var(--space-8)', paddingBottom: 'var(--space-12)' }}>
+    <div className="profile-page">
+      <div className="container">
         
-        <div className="grid grid-3 gap-6" style={{ gridTemplateColumns: '1fr 2fr' }}>
+        <div className="profile-layout">
           
           {/* Profile Sidebar */}
-          <div className="flex flex-col gap-6">
-            <div className="card p-6 text-center flex flex-col items-center">
-              <div 
-                className="w-32 h-32 rounded-full flex items-center justify-center text-4xl font-display font-bold text-white bg-primary shadow-md mb-4"
-                style={{ backgroundImage: user.profile_photo_url ? `url(${user.profile_photo_url})` : 'none', backgroundSize: 'cover' }}
-              >
-                {!user.profile_photo_url && (user.first_name?.[0] || <User size={48} />)}
+          <div className="profile-sidebar">
+            <div 
+              className="profile-avatar"
+              style={{ backgroundImage: user.profile_photo_url ? `url(${user.profile_photo_url})` : 'none' }}
+            >
+              {!user.profile_photo_url && (user.first_name?.[0] || <User size={48} />)}
+            </div>
+            <h2 className="profile-name">{user.first_name} {user.last_name}</h2>
+            <p className="profile-username">@{user.username}</p>
+            
+            <div className="profile-divider"></div>
+            
+            <div className="profile-info-list">
+              <div className="profile-info-item">
+                <Mail size={16} /> <span>{user.email}</span>
               </div>
-              <h2 className="text-2xl font-display font-semibold text-text">{user.first_name} {user.last_name}</h2>
-              <p className="text-muted text-sm mb-4">@{user.username}</p>
-              
-              <div className="w-full divider my-4"></div>
-              
-              <div className="w-full flex flex-col gap-3 text-sm text-left">
-                <div className="flex items-center gap-3 text-secondary">
-                  <Mail size={16} /> <span className="truncate">{user.email}</span>
+              {user.phone_number && (
+                <div className="profile-info-item">
+                  <Phone size={16} /> <span>{user.phone_number}</span>
                 </div>
-                {user.phone_number && (
-                  <div className="flex items-center gap-3 text-secondary">
-                    <Phone size={16} /> <span>{user.phone_number}</span>
-                  </div>
-                )}
-                {(user.city || user.country) && (
-                  <div className="flex items-center gap-3 text-secondary">
-                    <MapPin size={16} /> <span>{user.city}{user.city && user.country ? ', ' : ''}{user.country}</span>
-                  </div>
-                )}
-              </div>
+              )}
+              {(user.city || user.country) && (
+                <div className="profile-info-item">
+                  <MapPin size={16} /> <span>{user.city}{user.city && user.country ? ', ' : ''}{user.country}</span>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Main Content */}
-          <div className="flex flex-col gap-6">
+          <div className="profile-main">
             
             {/* Edit Profile Form */}
-            <div className="card p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-display font-semibold">Profile Details</h3>
+            <div className="profile-details-card">
+              <div className="profile-details-header">
+                <h3 className="profile-details-title">Profile Details</h3>
                 {!isEditing ? (
-                  <button className="btn btn-outline btn-sm" onClick={() => setIsEditing(true)}>
-                    <Edit2 size={14} /> Edit Profile
+                  <button className="profile-edit-btn" onClick={() => setIsEditing(true)}>
+                    <Edit2 size={16} /> Edit Profile
                   </button>
                 ) : (
-                  <button className="btn btn-ghost btn-sm text-muted" onClick={() => { setIsEditing(false); setError(''); }}>
+                  <button className="profile-cancel-btn" onClick={() => { setIsEditing(false); setError(''); }}>
                     <X size={16} /> Cancel
                   </button>
                 )}
               </div>
 
-              {error && <div className="error-banner">{error}</div>}
+              {error && (
+                <div style={{ marginBottom: '24px', padding: '16px', background: 'var(--color-danger-bg)', color: 'var(--color-danger)', borderRadius: 'var(--radius-md)' }}>
+                  {error}
+                </div>
+              )}
 
               {isEditing ? (
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4 animate-fade-in">
-                  <div className="grid-2 gap-4">
-                    <div className="input-group">
-                      <label className="input-label">First Name</label>
-                      <input type="text" name="first_name" className="input" value={formData.first_name} onChange={handleChange} required />
+                <form onSubmit={handleSubmit} className="profile-form">
+                  <div className="profile-form-row">
+                    <div className="profile-form-field">
+                      <label>First Name</label>
+                      <input type="text" name="first_name" className="profile-form-input" value={formData.first_name} onChange={handleChange} required />
                     </div>
-                    <div className="input-group">
-                      <label className="input-label">Last Name</label>
-                      <input type="text" name="last_name" className="input" value={formData.last_name} onChange={handleChange} required />
+                    <div className="profile-form-field">
+                      <label>Last Name</label>
+                      <input type="text" name="last_name" className="profile-form-input" value={formData.last_name} onChange={handleChange} required />
                     </div>
                   </div>
                   
-                  <div className="grid-2 gap-4">
-                    <div className="input-group">
-                      <label className="input-label">Phone Number</label>
-                      <input type="tel" name="phone_number" className="input" value={formData.phone_number} onChange={handleChange} />
+                  <div className="profile-form-row">
+                    <div className="profile-form-field">
+                      <label>Phone Number</label>
+                      <input type="tel" name="phone_number" className="profile-form-input" value={formData.phone_number} onChange={handleChange} />
                     </div>
-                    <div className="input-group">
-                      <label className="input-label">Email (Read Only)</label>
-                      <input type="email" className="input" value={user.email} disabled style={{ backgroundColor: 'var(--color-surface-2)' }} />
-                    </div>
-                  </div>
-
-                  <div className="grid-2 gap-4">
-                    <div className="input-group">
-                      <label className="input-label">City</label>
-                      <input type="text" name="city" className="input" value={formData.city} onChange={handleChange} />
-                    </div>
-                    <div className="input-group">
-                      <label className="input-label">Country</label>
-                      <input type="text" name="country" className="input" value={formData.country} onChange={handleChange} />
+                    <div className="profile-form-field">
+                      <label>Email <span style={{ opacity: 0.5 }}>(Read Only)</span></label>
+                      <input type="email" className="profile-form-input" value={user.email} disabled />
                     </div>
                   </div>
 
-                  <div className="input-group">
-                    <label className="input-label">Bio / Additional Info</label>
-                    <textarea name="additional_info" className="input py-2" style={{ minHeight: '80px' }} value={formData.additional_info} onChange={handleChange}></textarea>
+                  <div className="profile-form-row">
+                    <div className="profile-form-field">
+                      <label>City</label>
+                      <input type="text" name="city" className="profile-form-input" value={formData.city} onChange={handleChange} />
+                    </div>
+                    <div className="profile-form-field">
+                      <label>Country</label>
+                      <input type="text" name="country" className="profile-form-input" value={formData.country} onChange={handleChange} />
+                    </div>
                   </div>
 
-                  <div className="flex justify-end mt-2 pt-4 border-t border-border">
-                    <button type="submit" className={`btn btn-primary ${loading ? 'btn-loading' : ''}`} disabled={loading}>
-                      <Save size={16} /> {loading ? 'Saving...' : 'Save Changes'}
+                  <div className="profile-form-field">
+                    <label>Bio / Additional Info</label>
+                    <textarea name="additional_info" className="profile-form-input" value={formData.additional_info} onChange={handleChange}></textarea>
+                  </div>
+
+                  <div className="profile-form-actions">
+                    <button type="submit" className="profile-save-btn" disabled={loading}>
+                      <Save size={18} /> {loading ? 'Saving...' : 'Save Changes'}
                     </button>
                   </div>
                 </form>
               ) : (
-                <div className="text-secondary text-sm">
+                <div className={`profile-bio ${!user.additional_info ? 'empty' : ''}`}>
                   {user.additional_info ? (
-                    <p className="whitespace-pre-wrap">{user.additional_info}</p>
+                    <span style={{ whiteSpace: 'pre-wrap' }}>{user.additional_info}</span>
                   ) : (
-                    <p className="italic text-muted">No bio added yet.</p>
+                    "No bio added yet. Click edit to tell the world about your travels!"
                   )}
                 </div>
               )}
             </div>
 
-            {/* Preplanned Trips Mini-list */}
-            <div className="card p-0">
-              <div className="flex items-center justify-between p-6 border-b border-border">
-                <h3 className="text-xl font-display font-semibold">Upcoming & Preplanned</h3>
-                <Link to="/trips" className="btn btn-ghost btn-sm text-primary">View all <ArrowRight size={14}/></Link>
+            <div className="profile-trips-grid">
+              
+              {/* Preplanned Trips Mini-list */}
+              <div className="profile-trip-panel">
+                <div className="profile-trip-panel-header">
+                  <h3 className="profile-trip-panel-title">Upcoming</h3>
+                  <Link to="/trips" className="profile-trip-panel-link">View all <ArrowRight size={14}/></Link>
+                </div>
+                <div className="profile-trip-panel-body">
+                  {loadingTrips ? (
+                    <div className="skeleton" style={{ height: '48px', borderRadius: 'var(--radius-md)' }}></div>
+                  ) : preplannedTrips.length > 0 ? (
+                    <div className="profile-trip-list">
+                      {preplannedTrips.map(trip => (
+                        <Link key={trip.id} to={`/trips/${trip.id}`} className="profile-trip-item" style={{ textDecoration: 'none', color: 'inherit' }}>
+                          <div className="profile-trip-item-name">{trip.name}</div>
+                          <div className="profile-trip-item-date"><Calendar size={12}/> {new Date(trip.start_date).toLocaleDateString()}</div>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="profile-trip-empty">No upcoming trips planned.</div>
+                  )}
+                </div>
               </div>
-              <div className="p-6">
-                {loadingTrips ? (
-                  <div className="skeleton skeleton-text h-12 w-full mb-2"></div>
-                ) : preplannedTrips.length > 0 ? (
-                  <div className="flex flex-col gap-3">
-                    {preplannedTrips.map(trip => (
-                      <Link key={trip.id} to={`/trips/${trip.id}`} className="flex items-center justify-between p-3 bg-surface-2 rounded-md hover:bg-surface-3 transition-colors">
-                        <div className="font-medium text-text">{trip.name}</div>
-                        <div className="text-xs text-secondary flex items-center gap-1"><Calendar size={12}/> {new Date(trip.start_date).toLocaleDateString()}</div>
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-sm text-muted">No upcoming trips planned.</div>
-                )}
-              </div>
-            </div>
 
-            {/* Previous Trips Mini-list */}
-            <div className="card p-0">
-              <div className="flex items-center justify-between p-6 border-b border-border">
-                <h3 className="text-xl font-display font-semibold">Previous Adventures</h3>
-                <Link to="/trips" className="btn btn-ghost btn-sm text-primary">View all <ArrowRight size={14}/></Link>
+              {/* Previous Trips Mini-list */}
+              <div className="profile-trip-panel">
+                <div className="profile-trip-panel-header">
+                  <h3 className="profile-trip-panel-title">Previous</h3>
+                  <Link to="/trips" className="profile-trip-panel-link">View all <ArrowRight size={14}/></Link>
+                </div>
+                <div className="profile-trip-panel-body">
+                  {loadingTrips ? (
+                    <div className="skeleton" style={{ height: '48px', borderRadius: 'var(--radius-md)' }}></div>
+                  ) : previousTrips.length > 0 ? (
+                    <div className="profile-trip-list">
+                      {previousTrips.map(trip => (
+                        <Link key={trip.id} to={`/trips/${trip.id}`} className="profile-trip-item" style={{ textDecoration: 'none', color: 'inherit' }}>
+                          <div className="profile-trip-item-name">{trip.name}</div>
+                          <div className="profile-trip-item-date"><Calendar size={12}/> {new Date(trip.start_date).toLocaleDateString()}</div>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="profile-trip-empty">No past trips found.</div>
+                  )}
+                </div>
               </div>
-              <div className="p-6">
-                {loadingTrips ? (
-                  <div className="skeleton skeleton-text h-12 w-full mb-2"></div>
-                ) : previousTrips.length > 0 ? (
-                  <div className="flex flex-col gap-3">
-                    {previousTrips.map(trip => (
-                      <Link key={trip.id} to={`/trips/${trip.id}`} className="flex items-center justify-between p-3 bg-surface-2 rounded-md hover:bg-surface-3 transition-colors">
-                        <div className="font-medium text-text">{trip.name}</div>
-                        <div className="text-xs text-secondary flex items-center gap-1"><Calendar size={12}/> {new Date(trip.start_date).toLocaleDateString()}</div>
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-sm text-muted">No past trips found.</div>
-                )}
-              </div>
+
             </div>
 
           </div>

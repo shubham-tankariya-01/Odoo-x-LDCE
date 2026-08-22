@@ -14,6 +14,7 @@ import { MyTripsPage } from './pages/MyTripsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { SearchPage } from './pages/SearchPage';
 import { ItineraryViewPage } from './pages/ItineraryViewPage';
+import { TripBudgetPage } from './pages/TripBudgetPage';
 import { CommunityPage } from './pages/CommunityPage';
 import { CalendarPage } from './pages/CalendarPage';
 import { AdminPage } from './pages/AdminPage';
@@ -36,10 +37,12 @@ function AppContent() {
           <Route path="/trips/new" element={<CreateTripPage />} />
           <Route path="/trips/:tripId/build" element={<BuildItineraryPage />} />
           <Route path="/trips/:tripId" element={<ItineraryViewPage />} />
+          <Route path="/trips/:tripId/budget" element={<TripBudgetPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/calendar" element={<CalendarPage />} />
         </Route>
+
 
         {/* Admin Routes */}
         <Route element={<ProtectedRoute requireAdmin={true} />}>

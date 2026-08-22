@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Compass, AlertCircle, Camera } from 'lucide-react';
+import { Compass, AlertCircle } from 'lucide-react';
 
 export function RegisterPage() {
-  const { register } = useAuth();
+  const { user, token, register } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
@@ -17,15 +17,19 @@ export function RegisterPage() {
     country: '',
     additional_info: ''
   });
-  const [photoPreview, setPhotoPreview] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user && token) {
+      navigate('/', { replace: true });
+    }
+  }, [user, token, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
-    // Basic validation
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters long');
       return;
@@ -35,8 +39,7 @@ export function RegisterPage() {
     
     try {
       await register(formData);
-      // Assuming register logs them in or we just navigate to login
-      navigate('/');
+      navigate('/', { replace: true });
     } catch (err) {
       setError(err.message || 'Failed to create account');
     } finally {
@@ -44,136 +47,100 @@ export function RegisterPage() {
     }
   };
 
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setPhotoPreview(url);
-    }
-  };
-
   return (
-    <div className="auth-page">
-      <div className="auth-form-side" style={{ order: 2 }}>
-        <div style={{ maxWidth: '500px', width: '100%', margin: '0 auto' }}>
-          <div className="auth-logo">
-            <div className="navbar-logo-icon">
-              <Compass size={24} />
+    <div className="auth-page py-12">
+      <div className="auth-card" style={{ maxWidth: '600px' }}>
+        {/* Logo */}
+        <div className="auth-logo">
+          <div className="auth-logo-icon">
+            <Compass size={24} />
+          </div>
+          <span className="auth-logo-text">GlobeTrotter</span>
+        </div>
+        
+        <h1 className="auth-title">Create an account</h1>
+        <p className="auth-subtitle">Join us to start planning your perfect trips.</p>
+        
+        {error && (
+          <div className="auth-error">
+            <AlertCircle size={18} />
+            {error}
+          </div>
+        )}
+        
+        <form className="auth-form" onSubmit={handleSubmit}>
+          {/* Name row */}
+          <div className="auth-form-row">
+            <div className="auth-form-field">
+              <label htmlFor="first_name">First Name</label>
+              <input id="first_name" name="first_name" type="text" className="auth-input" placeholder="John" value={formData.first_name} onChange={handleChange} required disabled={loading} />
             </div>
-            GlobeTrotter
+            <div className="auth-form-field">
+              <label htmlFor="last_name">Last Name</label>
+              <input id="last_name" name="last_name" type="text" className="auth-input" placeholder="Doe" value={formData.last_name} onChange={handleChange} required disabled={loading} />
+            </div>
+          </div>
+
+          {/* Username */}
+          <div className="auth-form-field">
+            <label htmlFor="username">Username</label>
+            <input id="username" name="username" type="text" className="auth-input" placeholder="johndoe" value={formData.username} onChange={handleChange} required disabled={loading} />
+          </div>
+
+          {/* Email / Password row */}
+          <div className="auth-form-row">
+            <div className="auth-form-field">
+              <label htmlFor="email">Email</label>
+              <input id="email" name="email" type="email" className="auth-input" placeholder="you@example.com" value={formData.email} onChange={handleChange} required disabled={loading} />
+            </div>
+            <div className="auth-form-field">
+              <label htmlFor="password">Password</label>
+              <input id="password" name="password" type="password" className="auth-input" placeholder="Min. 6 characters" value={formData.password} onChange={handleChange} required disabled={loading} />
+            </div>
+          </div>
+
+          {/* Phone / City row */}
+          <div className="auth-form-row">
+            <div className="auth-form-field">
+              <label htmlFor="phone_number">Phone</label>
+              <input id="phone_number" name="phone_number" type="tel" className="auth-input" placeholder="+1 234 567 8900" value={formData.phone_number} onChange={handleChange} disabled={loading} />
+            </div>
+            <div className="auth-form-field">
+              <label htmlFor="city">City</label>
+              <input id="city" name="city" type="text" className="auth-input" placeholder="San Francisco" value={formData.city} onChange={handleChange} disabled={loading} />
+            </div>
+          </div>
+
+          {/* Country */}
+          <div className="auth-form-field">
+            <label htmlFor="country">Country</label>
+            <input id="country" name="country" type="text" className="auth-input" placeholder="United States" value={formData.country} onChange={handleChange} disabled={loading} />
+          </div>
+
+          {/* Bio */}
+          <div className="auth-form-field">
+            <label htmlFor="additional_info">Bio <span style={{ fontWeight: 'normal', opacity: 0.7 }}>(Optional)</span></label>
+            <textarea id="additional_info" name="additional_info" className="auth-input" style={{ resize: 'none' }} rows={3} placeholder="Tell us about yourself..." value={formData.additional_info} onChange={handleChange} disabled={loading} />
           </div>
           
-          <h2 className="auth-title">Create an account</h2>
-          <p className="auth-subtitle">Join us to start planning your perfect trips.</p>
-          
-          {error && (
-            <div className="error-banner">
-              <AlertCircle size={16} />
-              {error}
-            </div>
-          )}
-          
-          <form className="auth-form" onSubmit={handleSubmit}>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 'var(--space-2)' }}>
-              <div className="relative">
-                <div 
-                  className="navbar-avatar" 
-                  style={{ width: '80px', height: '80px', fontSize: 'var(--text-2xl)', background: photoPreview ? 'transparent' : 'var(--color-surface-2)', color: 'var(--color-text-3)' }}
-                >
-                  {photoPreview ? (
-                    <img src={photoPreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    <Camera size={32} />
-                  )}
-                </div>
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={handlePhotoChange}
-                  style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
-                  title="Upload photo"
-                />
-              </div>
-            </div>
-
-            <div className="grid-2 gap-4">
-              <div className="input-group">
-                <label className="input-label" htmlFor="first_name">First Name <span className="required">*</span></label>
-                <input id="first_name" name="first_name" type="text" className="input" value={formData.first_name} onChange={handleChange} required />
-              </div>
-              <div className="input-group">
-                <label className="input-label" htmlFor="last_name">Last Name <span className="required">*</span></label>
-                <input id="last_name" name="last_name" type="text" className="input" value={formData.last_name} onChange={handleChange} required />
-              </div>
-            </div>
-
-            <div className="input-group">
-              <label className="input-label" htmlFor="username">Username <span className="required">*</span></label>
-              <input id="username" name="username" type="text" className="input" value={formData.username} onChange={handleChange} required />
-            </div>
-
-            <div className="input-group">
-              <label className="input-label" htmlFor="email">Email <span className="required">*</span></label>
-              <input id="email" name="email" type="email" className="input" value={formData.email} onChange={handleChange} required />
-            </div>
-            
-            <div className="input-group">
-              <label className="input-label" htmlFor="password">Password <span className="required">*</span></label>
-              <input id="password" name="password" type="password" className="input" placeholder="Min. 6 characters" value={formData.password} onChange={handleChange} required />
-            </div>
-
-            <div className="input-group">
-              <label className="input-label" htmlFor="phone_number">Phone Number</label>
-              <input id="phone_number" name="phone_number" type="tel" className="input" value={formData.phone_number} onChange={handleChange} />
-            </div>
-
-            <div className="grid-2 gap-4">
-              <div className="input-group">
-                <label className="input-label" htmlFor="city">City</label>
-                <input id="city" name="city" type="text" className="input" value={formData.city} onChange={handleChange} />
-              </div>
-              <div className="input-group">
-                <label className="input-label" htmlFor="country">Country</label>
-                <input id="country" name="country" type="text" className="input" value={formData.country} onChange={handleChange} />
-              </div>
-            </div>
-
-            <div className="input-group">
-              <label className="input-label" htmlFor="additional_info">Bio / Additional Info</label>
-              <textarea id="additional_info" name="additional_info" className="input" style={{ minHeight: '80px', paddingTop: '10px' }} value={formData.additional_info} onChange={handleChange} />
-            </div>
-            
-            <button 
-              type="submit" 
-              className={`btn btn-primary btn-lg w-full ${loading ? 'btn-loading' : ''}`}
-              disabled={loading}
-              style={{ marginTop: 'var(--space-2)' }}
-            >
-              {loading ? 'Creating account...' : 'Create account'}
-            </button>
-          </form>
-          
-          <div className="auth-switch">
-            Already have an account? <Link to="/login">Sign in</Link>
-          </div>
-        </div>
-      </div>
-
-      <div className="auth-hero" style={{ order: 1 }}>
-        <img 
-          src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
-          alt="Travel beach" 
-          className="auth-hero-img"
-        />
-        <div className="auth-hero-content">
-          <h1 className="auth-hero-title">Start your journey.</h1>
-          <p className="auth-hero-subtitle">Create itineraries, manage budgets, and discover new destinations.</p>
-        </div>
+          <button 
+            type="submit" 
+            className="auth-submit-btn mt-2"
+            disabled={loading}
+          >
+            {loading ? 'Creating account...' : 'Create Account'}
+          </button>
+        </form>
+        
+        <p className="auth-footer">
+          Already have an account? <Link to="/login">Sign in</Link>
+        </p>
       </div>
     </div>
   );

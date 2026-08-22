@@ -81,9 +81,20 @@ class DailyBudget(BaseModel):
     date: date
     total: float
 
+class SectionBudgetBreakdown(BaseModel):
+    section_id: UUID
+    title: str
+    city_name: Optional[str] = None
+    budget: float = 0.0
+    total_spent: float = 0.0
+    activities_count: int = 0
+
 class TripBudgetRead(BaseModel):
     trip_id: UUID
     total: float
-    by_category: List[BudgetCategoryBreakdown]
-    by_day: List[DailyBudget]
-    average_daily: float
+    allocated_budget: float = 0.0
+    by_category: List[BudgetCategoryBreakdown] = []
+    by_day: List[DailyBudget] = []
+    by_section: List[SectionBudgetBreakdown] = []
+    average_daily: float = 0.0
+
