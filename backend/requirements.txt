@@ -12,3 +12,4 @@ pytest
 httpx
 requests
 pytest-asyncio
+cloudinary 
