@@ -77,7 +77,7 @@ class DefaultHTTPLLMProvider(BaseLLMProvider):
         elif os.getenv("LLM_MODEL"):
             self.model = os.getenv("LLM_MODEL")
         elif self.api_base_url and "groq.com" in self.api_base_url:
-            self.model = "llama-3.3-70b-versatile"
+            self.model = "openai/gpt-oss-20b"
         elif self.api_base_url and "generativelanguage.googleapis.com" in self.api_base_url:
             self.model = "gemini-2.0-flash"
         else:
