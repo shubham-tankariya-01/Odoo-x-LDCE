@@ -22,15 +22,20 @@ def test_patch_users_me(client, mock_db_session, mock_current_user):
     mock_db_session.commit.assert_called_once()
 
 def test_post_users_me_photo(client, mock_db_session):
-    # Create a dummy file
-    files = {'file': ('test.jpg', b'dummy content', 'image/jpeg')}
-    response = client.post("/users/me/photo", files=files)
-    
-    assert response.status_code == 200
-    data = response.json()
-    assert "photo_url" in data
-    assert data["photo_url"].startswith("/uploads/")
-    assert data["photo_url"].endswith(".jpg")
-    
+    from unittest.mock import patch
+    # Mock Cloudinary upload
+    mock_upload_response = {"secure_url": "https://res.cloudinary.com/demo/image/upload/sample.jpg"}
+    with patch("cloudinary.uploader.upload", return_value=mock_upload_response) as mock_upload:
+        files = {'file': ('test.jpg', b'dummy content', 'image/jpeg')}
+        response = client.post("/users/me/photo", files=files)
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert "photo_url" in data
+        assert data["photo_url"] == "https://res.cloudinary.com/demo/image/upload/sample.jpg"
+        
+        mock_upload.assert_called_once()
+        
     mock_db_session.add.assert_called_once()
     mock_db_session.commit.assert_called_once()
+
