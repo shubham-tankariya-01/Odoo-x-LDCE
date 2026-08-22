@@ -20,6 +20,8 @@ from backend.database.connection import DATABASE_URL
 from backend.main import app
 from backend.core.security import get_current_user, hash_password, create_access_token
 from backend.models.user import User
+from backend.models.city import City
+from backend.models.activity import Activity
 
 import ssl
 ssl_context = ssl.create_default_context()
@@ -48,6 +50,31 @@ async def db_session():
             expire_on_commit=False,
             join_transaction_mode="create_savepoint"
         )
+        # Seed an India city + activity so country-filter integration tests
+        # can find a real matching row. Rolls back with the transaction.
+        india_city = City(
+            id=uuid4(),
+            name="Jaipur",
+            country="India",
+            cost_index=3.0,
+            popularity_score=85,
+        )
+        session.add(india_city)
+        await session.flush()
+
+        india_activity = Activity(
+            id=uuid4(),
+            city_id=india_city.id,
+            name="Amber Fort Heritage Tour",
+            category="cultural",
+            cost=20.0,
+            duration_mins=180,
+            description="Explore the historic Amber Fort and palace complex in Jaipur.",
+            popularity_score=90,
+        )
+        session.add(india_activity)
+        await session.flush()
+
         yield session
         await session.close()
         await transaction.rollback()
