@@ -20,6 +20,7 @@ def mock_db_session():
     session.execute = AsyncMock()
     session.commit = AsyncMock()
     session.refresh = AsyncMock()
+    session.delete = AsyncMock()
     return session
 
 @pytest.fixture

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.api.routes import auth, users, catalog, search, community, admin, trips, sections, trip_activities
+from backend.api.routes import auth, users, catalog, search, community, admin, trips, sections, trip_activities, recommendations
 
 app = FastAPI(title="GlobeTrotter API")
 
@@ -20,6 +20,7 @@ app.include_router(catalog.router, tags=["Catalog"])
 app.include_router(search.router, prefix="/search", tags=["Search"])
 app.include_router(community.router, prefix="/community", tags=["Community"])
 app.include_router(admin.router, prefix="/admin", tags=["Admin"])
+app.include_router(recommendations.router, prefix="/recommendations", tags=["Recommendations"])
 
 # Engineer 2 routes
 app.include_router(trips.router, tags=["Trips"])
