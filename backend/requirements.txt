@@ -6,8 +6,9 @@ psycopg2-binary
 pydantic[email]
 pydantic-settings
 python-jose[cryptography]
-bcrypt
+passlib[bcrypt]
 python-multipart
 pytest
 httpx
 requests
+pytest-asyncio

@@ -81,5 +81,5 @@ async def delete_activity(id: UUID, db: AsyncSession = Depends(get_db), current_
     trip = await get_trip_or_404(db, section.trip_id)
     assert_trip_owner(trip, current_user.id)
     
-    db.delete(section_activity)
+    await db.delete(section_activity)
     await db.commit()

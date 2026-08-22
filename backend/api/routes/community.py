@@ -74,7 +74,7 @@ async def toggle_like(
     existing_like = like_res.scalars().first()
     
     if existing_like:
-        db.delete(existing_like)
+        await db.delete(existing_like)
         await db.commit()
         # Return a dummy representation to satisfy the response model (or modify schema to return status)
         # Technically toggling off means it's deleted. Let's return the deleted one.
